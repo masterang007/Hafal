@@ -280,12 +280,12 @@
     .home-mark { color: var(--gold); font-size: 2.2rem; }
     .home h1 { margin: 8px 0; font-size: clamp(1.8rem, 8vw, 3rem); }
     .home-subtitle { margin: 0 0 26px; color: var(--muted); line-height: 1.55; }
-    .lesson-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+    .lesson-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(135px, 1fr)); gap: 10px; }
     .lesson-card {
-      min-height: 190px;
-      padding: 22px 18px;
+      min-height: 125px;
+      padding: 15px 10px;
       border: 1px solid var(--line);
-      border-radius: 22px;
+      border-radius: 17px;
       background: rgba(255,255,255,.08);
       color: var(--text);
       display: flex;
@@ -298,7 +298,7 @@
     .lesson-card .lesson-arabic {
       color: var(--gold-2);
       font-family: "Geeza Pro", "Noto Naskh Arabic", "Traditional Arabic", serif;
-      font-size: 2.4rem;
+      font-size: 1.85rem;
       line-height: 1.35;
     }
     .lesson-card strong { font-size: 1.05rem; }
@@ -343,6 +343,32 @@
       text-align: center;
     }
 
+    .prayer-app .name-card { min-height: 510px; }
+    .prayer-app .arabic {
+      font-size: clamp(1.9rem, 8.8vw, 3.35rem);
+      line-height: 1.75;
+      max-width: 100%;
+    }
+    .prayer-app .latin {
+      color: var(--gold-2);
+      font-size: clamp(1rem, 4.3vw, 1.25rem);
+      line-height: 1.6;
+      font-weight: 600;
+    }
+    .prayer-app .meaning { font-size: clamp(.96rem, 3.9vw, 1.14rem); }
+    .prayer-app .latin.hidden,
+    .prayer-app .meaning.hidden { opacity: .25; filter: blur(8px); }
+    .reading-type {
+      display: inline-block;
+      margin-left: 6px;
+      padding: 3px 7px;
+      border: 1px solid var(--line);
+      border-radius: 99px;
+      color: var(--muted);
+      font-size: .7rem;
+      vertical-align: middle;
+    }
+
     @media (max-height: 680px) {
       .app { gap: 12px; }
       .name-card { min-height: 335px; padding-block: 24px; }
@@ -351,9 +377,10 @@
     }
 
     @media (max-width: 480px) {
-      .lesson-grid { grid-template-columns: 1fr; }
-      .lesson-card { min-height: 145px; }
+      .lesson-grid { grid-template-columns: repeat(2, 1fr); }
+      .lesson-card { min-height: 118px; }
       .yasin-app .name-card { min-height: 500px; }
+      .prayer-app .name-card { min-height: 500px; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -377,6 +404,11 @@
           <span class="lesson-arabic" lang="ar">يس</span>
           <strong>Surah Yasin</strong>
           <small>83 ayat, Rumi dan maksud</small>
+        </button>
+        <button type="button" class="lesson-card" id="choosePrayer">
+          <span class="lesson-arabic" lang="ar">الصَّلَاة</span>
+          <strong>Bacaan Solat</strong>
+          <small>Arab, Rumi dan maksud</small>
         </button>
       </div>
     </div>
@@ -449,6 +481,33 @@
       </label>
     </div>
     <p class="source-note">Teks Arab & terjemahan Melayu: Quran.com (Abdullah Muhammad Basmeih). Rumi ialah panduan sebutan; belajar tajwid dengan guru untuk bacaan yang tepat.</p>
+  </main>
+
+  <main class="app prayer-app view-hidden" id="prayerApp">
+    <header>
+      <h1>Hafal Bacaan Solat</h1>
+      <div><button class="home-button" id="prayerHome" type="button" aria-label="Kembali ke menu">⌂</button> <span class="counter" id="prayerCounter" aria-live="polite">1 / 20</span></div>
+    </header>
+
+    <div class="progress" aria-hidden="true"><div class="progress-bar" id="prayerProgress"></div></div>
+
+    <section class="name-card" id="prayerCard" role="button" aria-label="Bacaan dalam solat. Tekan untuk bacaan seterusnya">
+      <div class="verse-label"><span id="prayerLabel">Takbiratul Ihram</span><span class="reading-type" id="prayerType">Rukun</span></div>
+      <p class="arabic" id="prayerArabic" lang="ar">اللّٰهُ أَكْبَرُ</p>
+      <p class="latin" id="prayerRumi">Allahu Akbar</p>
+      <p class="meaning" id="prayerMeaning">Allah Maha Besar.</p>
+      <span class="tap-hint" id="prayerHint">Tap kad untuk bacaan seterusnya</span>
+    </section>
+
+    <div class="controls">
+      <button type="button" id="prayerPrev" aria-label="Bacaan sebelumnya">← Sebelum</button>
+      <button type="button" class="next-btn" id="prayerNext">Seterusnya →</button>
+      <label class="memory-label" for="prayerMemory">
+        <span>Mod Hafalan <small>— sembunyikan Rumi & maksud dahulu</small></span>
+        <input type="checkbox" id="prayerMemory">
+      </label>
+    </div>
+    <p class="source-note">Disusun mengikut amalan mazhab Syafi‘i yang lazim di Malaysia. “Rukun” wajib dilaksanakan; bacaan bertanda “Sunat” menyempurnakan solat. Rumi ialah panduan sebutan.</p>
   </main>
 
   <div class="overlay complete" id="complete" role="dialog" aria-modal="true" aria-labelledby="completeTitle">
@@ -565,6 +624,29 @@
 
     const yasin = [{"n":1,"a":"يسٓ","r":"Yaseen","m":"Yaa, Siin."},{"n":2,"a":"وَٱلْقُرْءَانِ ٱلْحَكِيمِ","r":"Waalqurani alhakeemi","m":"Demi Al-Quran yang mengandungi hikmat-hikmat dan kebenaran yang tetap kukuh,"},{"n":3,"a":"إِنَّكَ لَمِنَ ٱلْمُرْسَلِينَ","r":"Innaka lamina almursaleena","m":"Sesungguhnya engkau (wahai Muhammad adalah seorang Rasul) dari Rasul-rasul yang telah diutus,"},{"n":4,"a":"عَلَىٰ صِرَٰطٍ مُّسْتَقِيمٍ","r":"'ala siratin mustaqeemin","m":"Yang tetap di atas jalan yang lurus (ugama Islam)."},{"n":5,"a":"تَنزِيلَ ٱلْعَزِيزِ ٱلرَّحِيمِ","r":"Tanzeela al'azeezi alrraheemi","m":"Al-Quran itu, diturunkan oleh Allah Yang Maha Kuasa, lagi Maha Mengasihani,"},{"n":6,"a":"لِتُنذِرَ قَوْمًا مَّآ أُنذِرَ ءَابَآؤُهُمْ فَهُمْ غَـٰفِلُونَ","r":"Litunthira qawman ma onthira abaohum fahum ghafiloona","m":"Supaya engkau memberi peringatan dan amaran kepada kaum yang datuk neneknya telah lama tidak diberikan peringatan dan amaran; sebab itulah mereka lalai."},{"n":7,"a":"لَقَدْ حَقَّ ٱلْقَوْلُ عَلَىٰٓ أَكْثَرِهِمْ فَهُمْ لَا يُؤْمِنُونَ","r":"Laqad haqqa alqawlu 'ala aktharihim fahum la yuminoona","m":"Demi sesungguhnya, telah tetap hukuman seksa atas kebanyakan mereka, kerana mereka tidak mahu beriman."},{"n":8,"a":"إِنَّا جَعَلْنَا فِىٓ أَعْنَـٰقِهِمْ أَغْلَـٰلًا فَهِىَ إِلَى ٱلْأَذْقَانِ فَهُم مُّقْمَحُونَ","r":"Inna ja'alna fee a'naqihim aghlalan fahiya ila alathqani fahum muqmahoona","m":"Sesungguhnya Kami jadikan (kesombongan dan keengganan mereka tunduk kepada kebenaran sebagai) belenggu yang memberkas kedua tangan mereka ke batang leher mereka; (lebarnya belenggu itu) sampai (menongkatkan) dagu mereka lalu menjadilah mereka terdongak."},{"n":9,"a":"وَجَعَلْنَا مِنۢ بَيْنِ أَيْدِيهِمْ سَدًّا وَمِنْ خَلْفِهِمْ سَدًّا فَأَغْشَيْنَـٰهُمْ فَهُمْ لَا يُبْصِرُونَ","r":"Waja'alna min bayni aydeehim saddan wamin khalfihim saddan faaghshaynahum fahum la yubsiroona","m":"Dan Kami jadikan (sifat tamak dan gila mereka kepada harta benda dan pangkat itu sebagai) sekatan (yang menghalang mereka daripada memandang kepada keburukan dan kesingkatan masa dunia yang ada) di hadapan mereka, dan sekatan (yang menghalang mereka daripada memikirkan azab yang ada) di belakang mereka (pada hari kiamat). lalu Kami tutup pandangan mereka; maka dengan itu, mereka tidak dapat melihat (jalan yang benar)."},{"n":10,"a":"وَسَوَآءٌ عَلَيْهِمْ ءَأَنذَرْتَهُمْ أَمْ لَمْ تُنذِرْهُمْ لَا يُؤْمِنُونَ","r":"Wasawaon 'alayhim aanthartahum am lam tunthirhum la yuminoona","m":"Dan (dengan sebab itu) sama sahaja kepada mereka, engkau beri amaran atau engkau tidak beri amaran kepadanya - mereka tidak akan beriman."},{"n":11,"a":"إِنَّمَا تُنذِرُ مَنِ ٱتَّبَعَ ٱلذِّكْرَ وَخَشِىَ ٱلرَّحْمَـٰنَ بِٱلْغَيْبِ ۖ فَبَشِّرْهُ بِمَغْفِرَةٍ وَأَجْرٍ كَرِيمٍ","r":"Innama tunthiru mani ittaba'a alththikra wakhashiya alrrahmana bialghaybi fabashshirhu bimaghfiratin waajrin kareemin","m":"Sesungguhnya peringatan dan amaran (yang berkesan dan mendatangkan faedah) hanyalah yang engkau berikan kepada orang yang sedia menurut ajaran Al-Quran serta ia takut (melanggar perintah Allah) Ar-Rahman semasa ia tidak dilihat orang dan semasa ia tidak melihat azab Tuhan. Oleh itu berilah kepadanya berita yang mengembirakan dengan keampunan dan pahala yang mulia."},{"n":12,"a":"إِنَّا نَحْنُ نُحْىِ ٱلْمَوْتَىٰ وَنَكْتُبُ مَا قَدَّمُوا۟ وَءَاثَـٰرَهُمْ ۚ وَكُلَّ شَىْءٍ أَحْصَيْنَـٰهُ فِىٓ إِمَامٍ مُّبِينٍ","r":"Inna nahnu nuhyee almawta wanaktubu ma qaddamoo waatharahum wakulla shayin ahsaynahu fee imamin mubeenin","m":"Sesungguhnya Kami menghidupkan orang-orang yang mati, dan Kami tuliskan segala yang mereka telah kerjakan serta segala kesan perkataan dan perbuatan yang mereka tinggalkan. Dan (ingatlah) tiap-tiap sesuatu kami catitkan satu persatu dalam Kitab (ibu Suratan) yang jelas nyata."},{"n":13,"a":"وَٱضْرِبْ لَهُم مَّثَلًا أَصْحَـٰبَ ٱلْقَرْيَةِ إِذْ جَآءَهَا ٱلْمُرْسَلُونَ","r":"Waidrib lahum mathalan ashaba alqaryati ith jaaha almursaloona","m":"Dan ceritakanlah kepada mereka satu keadaan yang ajaib mengenai kisah penduduk sebuah bandar (yang tertentu) iaitu ketika mereka didatangi Rasul-rasul (Kami),"},{"n":14,"a":"إِذْ أَرْسَلْنَآ إِلَيْهِمُ ٱثْنَيْنِ فَكَذَّبُوهُمَا فَعَزَّزْنَا بِثَالِثٍ فَقَالُوٓا۟ إِنَّآ إِلَيْكُم مُّرْسَلُونَ","r":"Ith arsalna ilayhimu ithnayni fakaththaboohuma fa'azzazna bithalithin faqaloo inna ilaykum mursaloona","m":"Ketika Kami mengutus kepada mereka dua orang Rasul lalu mereka mendustakannya; kemudian Kami kuatkan (kedua Rasul itu) dengan Rasul yang ketiga, lalu Rasul-rasul itu berkata: ` Sesungguhnya kami ini adalah diutuskan kepada kamu '."},{"n":15,"a":"قَالُوا۟ مَآ أَنتُمْ إِلَّا بَشَرٌ مِّثْلُنَا وَمَآ أَنزَلَ ٱلرَّحْمَـٰنُ مِن شَىْءٍ إِنْ أَنتُمْ إِلَّا تَكْذِبُونَ","r":"Qaloo ma antum illa basharun mithluna wama anzala alrrahmanu min shayin in antum illa takthiboona","m":"Penduduk bandar itu menjawab: \"Kamu ini tidak lain hanyalah manusia seperti kami juga, dan Tuhan Yang Maha Pemurah tidak menurunkan sesuatupun (tentang ugama yang kamu dakwakan); Kamu ini tidak lain hanyalah berdusta\"."},{"n":16,"a":"قَالُوا۟ رَبُّنَا يَعْلَمُ إِنَّآ إِلَيْكُمْ لَمُرْسَلُونَ","r":"Qaloo rabbuna ya'lamu inna ilaykum lamursaloona","m":"Rasul-rasul berkata: Tuhan Kami mengetahui bahawa sesungguhnya Kami adalah Rasul-rasul yang diutus kepada kamu,"},{"n":17,"a":"وَمَا عَلَيْنَآ إِلَّا ٱلْبَلَـٰغُ ٱلْمُبِينُ","r":"Wama 'alayna illa albalaghu almubeenu","m":"\"Dan tugas Kami hanyalah menyampaikan perintah-perintahNya dengan cara yang jelas nyata\"."},{"n":18,"a":"قَالُوٓا۟ إِنَّا تَطَيَّرْنَا بِكُمْ ۖ لَئِن لَّمْ تَنتَهُوا۟ لَنَرْجُمَنَّكُمْ وَلَيَمَسَّنَّكُم مِّنَّا عَذَابٌ أَلِيمٌ","r":"Qaloo inna tatayyarna bikum lain lam tantahoo lanarjumannakum walayamassannakum minna 'athabun aleemun","m":"Penduduk bandar itu berkata pula: \"Sesungguhnya kami merasa nahas dan malang dengan sebab kamu. Demi sesungguhnya, kalau kamu tidak berhenti (dari menjalankan tugas yang kamu katakan itu), tentulah kami akan merejam kamu dan sudah tentu kamu akan merasai dari pihak kami azab seksa yang tidak terperi sakitnya\"."},{"n":19,"a":"قَالُوا۟ طَـٰٓئِرُكُم مَّعَكُمْ ۚ أَئِن ذُكِّرْتُم ۚ بَلْ أَنتُمْ قَوْمٌ مُّسْرِفُونَ","r":"Qaloo tairukum ma'akum ain thukkirtum bal antum qawmun musrifoona","m":"Rasul-rasul itu menjawab: \"Nahas dan malang kamu itu adalah disebabkan (kekufuran) yang ada pada kamu. Patutkah kerana kamu diberi peringatan dan nasihat pengajaran (maka kamu mengancam kami dengan apa yang kamu katakan itu)? (Kamu bukanlah orang-orang yang mahu insaf) bahkan kamu adalah kaum pelampau\"."},{"n":20,"a":"وَجَآءَ مِنْ أَقْصَا ٱلْمَدِينَةِ رَجُلٌ يَسْعَىٰ قَالَ يَـٰقَوْمِ ٱتَّبِعُوا۟ ٱلْمُرْسَلِينَ","r":"Wajaa min aqsa almadeenati rajulun yas'a qala ya qawmi ittabi'oo almursaleena","m":"Dan (semasa Rasul-rasul itu diancam), datanglah seorang lelaki dari hujung bandar itu dengan berlari, lalu memberi nasihat dengan katanya:\" Wahai kaumku! Turutlah Rasul-rasul itu -"},{"n":21,"a":"ٱتَّبِعُوا۟ مَن لَّا يَسْـَٔلُكُمْ أَجْرًا وَهُم مُّهْتَدُونَ","r":"Ittabi'oo man la yasalukum ajran wahum muhtadoona","m":"\"Turutlah orang-orang yang tidak meminta kapada kamu sesuatu balasan, sedang mereka adalah orang-orang mandapat hidayah petunjuk\"."},{"n":22,"a":"وَمَا لِىَ لَآ أَعْبُدُ ٱلَّذِى فَطَرَنِى وَإِلَيْهِ تُرْجَعُونَ","r":"Wama liya la a'budu allathee fataranee wailayhi turja'oona","m":"Dan (apabila ditanya: Sudahkah engkau menerima ugama mereka? Maka jawabnya): \"Mengapa aku tidak menyembah Tuhan yang menciptakan daku, dan yang kepadaNyalah (aku dan) kamu semua akan dikembalikan?"},{"n":23,"a":"ءَأَتَّخِذُ مِن دُونِهِۦٓ ءَالِهَةً إِن يُرِدْنِ ٱلرَّحْمَـٰنُ بِضُرٍّ لَّا تُغْنِ عَنِّى شَفَـٰعَتُهُمْ شَيْـًٔا وَلَا يُنقِذُونِ","r":"Aattakhithu min doonihi alihatan in yuridni alrrahmanu bidurrin la tughni 'annee shafa'atuhum shayan wala yunqithooni","m":"\"Patutkah aku menyembah beberapa tuhan yang lain dari Allah? (Sudah tentu tidak patut, kerana) jika Allah yang Maha Pemurah hendak menimpakan daku dengan sesuatu bahaya, mereka tidak dapat memberikan sebarang syafaat kepadaku, dan mereka juga tidak dapat menyelamatkan daku."},{"n":24,"a":"إِنِّىٓ إِذًا لَّفِى ضَلَـٰلٍ مُّبِينٍ","r":"Innee ithan lafee dalalin mubeenin","m":"\"Sesungguhnya aku (kalau melakukan syirik) tentulah aku pada ketika itu berada dalam kesesatan yang nyata."},{"n":25,"a":"إِنِّىٓ ءَامَنتُ بِرَبِّكُمْ فَٱسْمَعُونِ","r":"Innee amantu birabbikum faisma'ooni","m":"\"Sesungguhnya aku telah beriman kepada Tuhan kamu, maka dengarlah (nasihatku)\",."},{"n":26,"a":"قِيلَ ٱدْخُلِ ٱلْجَنَّةَ ۖ قَالَ يَـٰلَيْتَ قَوْمِى يَعْلَمُونَ","r":"Qeela odkhuli aljannata qala ya layta qawmee ya'lamoona","m":"(Setelah ia mati) lalu dikatakan kepadanya: \"Masuklah ke dalam Syurga\". Ia berkata; \"Alangkah baiknya kalau kaumku mengetahui -"},{"n":27,"a":"بِمَا غَفَرَ لِى رَبِّى وَجَعَلَنِى مِنَ ٱلْمُكْرَمِينَ","r":"Bima ghafara lee rabbee waja'alanee mina almukrameena","m":"\"Tentang perkara yang menyebabkan daku diampunkan oleh Tuhanku, serta dijadikannya daku dari orang-orang yang dimuliakan\"."},{"n":28,"a":"۞ وَمَآ أَنزَلْنَا عَلَىٰ قَوْمِهِۦ مِنۢ بَعْدِهِۦ مِن جُندٍ مِّنَ ٱلسَّمَآءِ وَمَا كُنَّا مُنزِلِينَ","r":"Wama anzalna 'ala qawmihi min ba'dihi min jundin mina alssamai wama kunna munzileena","m":"Dan Kami tidak menurunkan kepada kaumnya sesudah ia (mati) sebarang pasukan tentera dari langit (untuk membinasakan mereka), dan tidak perlu Kami menurunkannya."},{"n":29,"a":"إِن كَانَتْ إِلَّا صَيْحَةً وَٰحِدَةً فَإِذَا هُمْ خَـٰمِدُونَ","r":"In kanat illa sayhatan wahidatan faitha hum khamidoona","m":"(Kebinasaan mereka) hanyalah dilakukan dengan satu pekikan (yang dahsyat), maka dengan serta merta mereka semua sunyi-sepi tidak hidup lagi."},{"n":30,"a":"يَـٰحَسْرَةً عَلَى ٱلْعِبَادِ ۚ مَا يَأْتِيهِم مِّن رَّسُولٍ إِلَّا كَانُوا۟ بِهِۦ يَسْتَهْزِءُونَ","r":"Ya hasratan 'ala al'ibadi ma yateehim min rasoolin illa kanoo bihi yastahzioona","m":"Sungguh besar perasaan sesal dan kecewa yang menimpa hamba-hamba (yang mengingkari kebenaran)! Tidak datang kepada mereka seorang Rasul melainkan mereka mengejek-ejek dan memperolok-olokkannya."},{"n":31,"a":"أَلَمْ يَرَوْا۟ كَمْ أَهْلَكْنَا قَبْلَهُم مِّنَ ٱلْقُرُونِ أَنَّهُمْ إِلَيْهِمْ لَا يَرْجِعُونَ","r":"Alam yaraw kam ahlakna qablahum mina alqurooni annahum ilayhim la yarji'oona","m":"Tidakkah mereka mengetahui berapa banyak umat-umat yang telah Kami binasakan sebelum mereka? Umat-umat yang telah binasa itu tidak kembali lagi kepada mereka (bahkan kembali kepada Kami, untuk menerima balasan)."},{"n":32,"a":"وَإِن كُلٌّ لَّمَّا جَمِيعٌ لَّدَيْنَا مُحْضَرُونَ","r":"Wain kullun lamma jamee'un ladayna muhdaroona","m":"Dan tidak ada satu makhluk pun melainkan dihimpunkan ke tempat perbicaraan Kami, semuanya dibawa hadir (untuk menerima balasan)."},{"n":33,"a":"وَءَايَةٌ لَّهُمُ ٱلْأَرْضُ ٱلْمَيْتَةُ أَحْيَيْنَـٰهَا وَأَخْرَجْنَا مِنْهَا حَبًّا فَمِنْهُ يَأْكُلُونَ","r":"Waayatun lahumu alardu almaytatu ahyaynaha waakhrajna minha habban faminhu yakuloona","m":"Dan dalil yang terang untuk mereka (memahami kekuasaan dan kemurahan kami), ialah bumi yang mati; kami hidupkan dia serta kami keluarkan daripadanya biji-bijian, maka daripada biji-bijian itu mereka makan."},{"n":34,"a":"وَجَعَلْنَا فِيهَا جَنَّـٰتٍ مِّن نَّخِيلٍ وَأَعْنَـٰبٍ وَفَجَّرْنَا فِيهَا مِنَ ٱلْعُيُونِ","r":"Waja'alna feeha jannatin min nakheelin waa'nabin wafajjarna feeha mina al'uyooni","m":"Dan kami jadikan di bumi itu kebun-kebun kurma dan anggur, dan kami pancarkan padanya beberapa matair,"},{"n":35,"a":"لِيَأْكُلُوا۟ مِن ثَمَرِهِۦ وَمَا عَمِلَتْهُ أَيْدِيهِمْ ۖ أَفَلَا يَشْكُرُونَ","r":"Liyakuloo min thamarihi wama 'amilathu aydeehim afala yashkuroona","m":"Supaya mereka makan dari buah-buahannya dan dari apa yang dikerjakan oleh tangan mereka; maka patutkah mereka tidak bersyukur?"},{"n":36,"a":"سُبْحَـٰنَ ٱلَّذِى خَلَقَ ٱلْأَزْوَٰجَ كُلَّهَا مِمَّا تُنۢبِتُ ٱلْأَرْضُ وَمِنْ أَنفُسِهِمْ وَمِمَّا لَا يَعْلَمُونَ","r":"Subhana allathee khalaqa alazwaja kullaha mimma tunbitu alardu wamin anfusihim wamimma la ya'lamoona","m":"Maha Suci Tuhan yang telah menciptakan makhluk-makhluk semuanya berpasangan; sama ada dari yang ditumbuhkan oleh bumi, atau dari diri mereka, ataupun dari apa yang mereka tidak mengetahuinya."},{"n":37,"a":"وَءَايَةٌ لَّهُمُ ٱلَّيْلُ نَسْلَخُ مِنْهُ ٱلنَّهَارَ فَإِذَا هُم مُّظْلِمُونَ","r":"Waayatun lahumu allaylu naslakhu minhu alnnahara faitha hum muthlimoona","m":"Dan lagi dalil yang terang untuk mereka (berfikir) ialah malam; Kami hilangkan siang daripadanya, maka dengan serta-merta mereka berada dalam gelap-gelita;"},{"n":38,"a":"وَٱلشَّمْسُ تَجْرِى لِمُسْتَقَرٍّ لَّهَا ۚ ذَٰلِكَ تَقْدِيرُ ٱلْعَزِيزِ ٱلْعَلِيمِ","r":"Waalshshamsu tajree limustaqarrin laha thalika taqdeeru al'azeezi al'aleemi","m":"Dan (sebahagian dari dalil yang tersebut ialah) matahari; ia kelihatan beredar ke tempat yang ditetapkan baginya; itu adalah takdir Tuhan yang Maha Kuasa, lagi Maha Mengetahui;"},{"n":39,"a":"وَٱلْقَمَرَ قَدَّرْنَـٰهُ مَنَازِلَ حَتَّىٰ عَادَ كَٱلْعُرْجُونِ ٱلْقَدِيمِ","r":"Waalqamara qaddarnahu manazila hatta 'ada kaal'urjooni alqadeemi","m":"Dan bulan pula Kami takdirkan dia beredar melalui beberapa peringkat, sehingga di akhir peredarannya kelihatan kembalinya pula ke peringkat awalnya - (berbentuk melengkung) seperti tandan yang kering."},{"n":40,"a":"لَا ٱلشَّمْسُ يَنۢبَغِى لَهَآ أَن تُدْرِكَ ٱلْقَمَرَ وَلَا ٱلَّيْلُ سَابِقُ ٱلنَّهَارِ ۚ وَكُلٌّ فِى فَلَكٍ يَسْبَحُونَ","r":"La alshshamsu yanbaghee laha an tudrika alqamara wala allaylu sabiqu alnnahari wakullun fee falakin yasbahoona","m":"(Dengan ketentuan yang demikian), matahari tidak mudah baginya mengejar bulan, dan malam pula tidak dapat mendahului siang; kerana tiap-tiap satunya beredar terapung-apung di tempat edarannya masing-masing."},{"n":41,"a":"وَءَايَةٌ لَّهُمْ أَنَّا حَمَلْنَا ذُرِّيَّتَهُمْ فِى ٱلْفُلْكِ ٱلْمَشْحُونِ","r":"Waayatun lahum anna hamalna thurriyyatahum fee alfulki almashhooni","m":"Dan satu dalil lagi untuk mereka (insaf) ialah, Kami membawa belayar jenis keluarga mereka dalam bahtera yang penuh sarat;"},{"n":42,"a":"وَخَلَقْنَا لَهُم مِّن مِّثْلِهِۦ مَا يَرْكَبُونَ","r":"Wakhalaqna lahum min mithlihi ma yarkaboona","m":"Dan Kami ciptakan untuk mereka, jenis-jenis kenderaan yang sama dengannya, yang mereka dapat mengenderainya."},{"n":43,"a":"وَإِن نَّشَأْ نُغْرِقْهُمْ فَلَا صَرِيخَ لَهُمْ وَلَا هُمْ يُنقَذُونَ","r":"Wain nasha nughriqhum fala sareekha lahum wala hum yunqathoona","m":"Dan jika kami kehendaki, kami boleh tenggelamkan mereka; (kiranya Kami lakukan yang demikian) maka tidak ada yang dapat memberi pertolongan kepada mereka, dan mereka juga tidak dapat diselamatkan, -"},{"n":44,"a":"إِلَّا رَحْمَةً مِّنَّا وَمَتَـٰعًا إِلَىٰ حِينٍ","r":"Illa rahmatan minna wamata'an ila heenin","m":"Kecuali dengan kemurahan dari pihak Kami memberi rahmat dan kesenangan hidup kepada mereka hingga ke suatu masa."},{"n":45,"a":"وَإِذَا قِيلَ لَهُمُ ٱتَّقُوا۟ مَا بَيْنَ أَيْدِيكُمْ وَمَا خَلْفَكُمْ لَعَلَّكُمْ تُرْحَمُونَ","r":"Waitha qeela lahumu ittaqoo ma bayna aydeekum wama khalfakum la'allakum turhamoona","m":"Dan apabila dikatakan kepada mereka: \" berjaga-jagalah kamu akan apa yang ada di hadapan kamu (dari urusan-urusan hidup di dunia ini), dan apa yang ada di belakang kamu (dari huru-hara dan balasan akhirat), supaya kamu beroleh rahmat\", (mereka tidak mengindahkannya)."},{"n":46,"a":"وَمَا تَأْتِيهِم مِّنْ ءَايَةٍ مِّنْ ءَايَـٰتِ رَبِّهِمْ إِلَّا كَانُوا۟ عَنْهَا مُعْرِضِينَ","r":"Wama tateehim min ayatin min ayati rabbihim illa kanoo 'anha mu'rideena","m":"Dan (itulah tabiat mereka) tidak ada sesuatu keterangan yang sampai kepada mereka dari keterangan-keterangan tuhan mereka melainkan mereka selalu berpaling daripadanya (enggan menerimanya)."},{"n":47,"a":"وَإِذَا قِيلَ لَهُمْ أَنفِقُوا۟ مِمَّا رَزَقَكُمُ ٱللَّهُ قَالَ ٱلَّذِينَ كَفَرُوا۟ لِلَّذِينَ ءَامَنُوٓا۟ أَنُطْعِمُ مَن لَّوْ يَشَآءُ ٱللَّهُ أَطْعَمَهُۥٓ إِنْ أَنتُمْ إِلَّا فِى ضَلَـٰلٍ مُّبِينٍ","r":"Waitha qeela lahum anfiqoo mimma razaqakumu Allahu qala allatheena kafaroo lillatheena amanoo anut'imu man law yashao Allahu at'amahu in antum illa fee dalalin mubeenin","m":"Dan apabila dikatakan kepada mereka:\" Dermakanlah sebahagian dari rezeki yang dikurniakan Allah kepada kamu\", berkatalah orang-orang yang kafir itu kepada orang-orang yang beriman (secara mengejek-ejek): \" Patutkah kami memberi makan kepada orang yang jika Allah kehendaki tentulah Ia akan memberinya makan? Kamu ini hanyalah berada dalam kesesatan yang nyata\"."},{"n":48,"a":"وَيَقُولُونَ مَتَىٰ هَـٰذَا ٱلْوَعْدُ إِن كُنتُمْ صَـٰدِقِينَ","r":"Wayaqooloona mata hatha alwa'du in kuntum sadiqeena","m":"Dan (apabila mereka diingatkan tentang huru-hara dan balasan akhirat) mereka bertanya (secara mempersenda): \" Bilakah datangnya (hari akhirat) yang dijanjikan itu? Jika betul kamu orang-orang yang benar (maka kami sedia menunggu)!\","},{"n":49,"a":"مَا يَنظُرُونَ إِلَّا صَيْحَةً وَٰحِدَةً تَأْخُذُهُمْ وَهُمْ يَخِصِّمُونَ","r":"Ma yanthuroona illa sayhatan wahidatan takhuthuhum wahum yakhissimoona","m":"Mereka tidak menunggu melainkan satu pekikan yang - (dengan secara mengejut) akan membinasakan mereka semasa mereka dalam keadaan leka bertengkar (merundingkan urusan dunia masing-masing)."},{"n":50,"a":"فَلَا يَسْتَطِيعُونَ تَوْصِيَةً وَلَآ إِلَىٰٓ أَهْلِهِمْ يَرْجِعُونَ","r":"Fala yastatee'oona tawsiyatan wala ila ahlihim yarji'oona","m":"Maka dengan itu, mereka tidak berpeluang membuat sebarang pesanan (wasiat atau lainnya), dan (kalau mereka berada di luar) mereka tidak sempat kembali kepada keluarganya."},{"n":51,"a":"وَنُفِخَ فِى ٱلصُّورِ فَإِذَا هُم مِّنَ ٱلْأَجْدَاثِ إِلَىٰ رَبِّهِمْ يَنسِلُونَ","r":"Wanufikha fee alssoori faitha hum mina alajdathi ila rabbihim yansiloona","m":"Dan sudah tentu akan ditiupkan sangkakala (menghidupkan orang-orang yang telah mati; apabila berlaku yang demikian) maka semuanya segera bangkit keluar dari kubur masing-masing (untuk) mengadap Tuhannya."},{"n":52,"a":"قَالُوا۟ يَـٰوَيْلَنَا مَنۢ بَعَثَنَا مِن مَّرْقَدِنَا ۜ ۗ هَـٰذَا مَا وَعَدَ ٱلرَّحْمَـٰنُ وَصَدَقَ ٱلْمُرْسَلُونَ","r":"Qaloo ya waylana man ba'athana min marqadina hatha ma wa'ada alrrahmanu wasadaqa almursaloona","m":"(Pada ketika itu) orang-orang yang tidak percayakan hidup semula berkata: Aduhai celakanya kami! Siapakah yang membangkitkan kami dari kubur tempat tidur kami?,, (Lalu dikatakan kepada mereka): \" Inilah dia yang telah dijanjikan oleh Allah Yang Maha Pemurah dan benarlah berita yang disampaikan oleh Rasul-rasul!,"},{"n":53,"a":"إِن كَانَتْ إِلَّا صَيْحَةً وَٰحِدَةً فَإِذَا هُمْ جَمِيعٌ لَّدَيْنَا مُحْضَرُونَ","r":"In kanat illa sayhatan wahidatan faitha hum jamee'un ladayna muhdaroona","m":"Hanyalah dengan berlakunya satu pekikan sahaja, maka dengan serta merta mereka dihimpunkan ke tempat perbicaraan Kami, semuanya dibawa hadir (untuk menerima balasan)."},{"n":54,"a":"فَٱلْيَوْمَ لَا تُظْلَمُ نَفْسٌ شَيْـًٔا وَلَا تُجْزَوْنَ إِلَّا مَا كُنتُمْ تَعْمَلُونَ","r":"Faalyawma la tuthlamu nafsun shayan wala tujzawna illa ma kuntum ta'maloona","m":"Maka pada hari itu, tidak ada seseorang yang akan dianiaya sedikitpun, dan kamu pula tidak akan dibalas melainkan menurut amal yang kamu telah kerjakan."},{"n":55,"a":"إِنَّ أَصْحَـٰبَ ٱلْجَنَّةِ ٱلْيَوْمَ فِى شُغُلٍ فَـٰكِهُونَ","r":"Inna ashaba aljannati alyawma fee shughulin fakihoona","m":"Sesungguhnya penduduk Syurga pada hari itu, berada dalam keadaan sibuk leka menikmati kesenangan;"},{"n":56,"a":"هُمْ وَأَزْوَٰجُهُمْ فِى ظِلَـٰلٍ عَلَى ٱلْأَرَآئِكِ مُتَّكِـُٔونَ","r":"Hum waazwajuhum fee thilalin 'ala alaraiki muttakioona","m":"Mereka dengan pasangan-pasangan mereka bersukaria di tempat yang teduh, sambil duduk berbaring di atas pelamin;"},{"n":57,"a":"لَهُمْ فِيهَا فَـٰكِهَةٌ وَلَهُم مَّا يَدَّعُونَ","r":"Lahum feeha fakihatun walahum ma yadda'oona","m":"Mereka beroleh dalam Syurga itu pelbagai jenis buah-buahan, dan mereka beroleh apa sahaja yang mereka kehendaki;"},{"n":58,"a":"سَلَـٰمٌ قَوْلًا مِّن رَّبٍّ رَّحِيمٍ","r":"Salamun qawlan min rabbin raheemin","m":"(Mereka juga beroleh) ucapan salam sejahtera dari Tuhan Yang Maha Mengasihani."},{"n":59,"a":"وَٱمْتَـٰزُوا۟ ٱلْيَوْمَ أَيُّهَا ٱلْمُجْرِمُونَ","r":"Waimtazoo alyawma ayyuha almujrimoona","m":"Dan (sebaliknya dikatakan kepada orang-orang yang kafir): \"Berpisahlah kamu pada hari ini, hai orang-orang yang berdosa, (dari bercampur gaul dengan orang-orang yang beriman)."},{"n":60,"a":"۞ أَلَمْ أَعْهَدْ إِلَيْكُمْ يَـٰبَنِىٓ ءَادَمَ أَن لَّا تَعْبُدُوا۟ ٱلشَّيْطَـٰنَ ۖ إِنَّهُۥ لَكُمْ عَدُوٌّ مُّبِينٌ","r":"Alam a'had ilaykum ya banee adama an la ta'budoo alshshaytana innahu lakum 'aduwwun mubeenun","m":"\"Bukankah Aku telah perintahkan kamu wahai anak-anak Adam, supaya kamu jangan menyembah Syaitan? Sesungguhnya ia musuh yang nyata terhadap kamu!"},{"n":61,"a":"وَأَنِ ٱعْبُدُونِى ۚ هَـٰذَا صِرَٰطٌ مُّسْتَقِيمٌ","r":"Waani o'budoonee hatha siratun mustaqeemun","m":"\"Dan (Aku perintahkan): hendaklah kamu menyembahKu; inilah jalan yang lurus."},{"n":62,"a":"وَلَقَدْ أَضَلَّ مِنكُمْ جِبِلًّا كَثِيرًا ۖ أَفَلَمْ تَكُونُوا۟ تَعْقِلُونَ","r":"Walaqad adalla minkum jibillan katheeran afalam takoonoo ta'qiloona","m":"\"Dan sesungguhnya Syaitan itu telah menyesatkan golongan yang ramai di antara kamu; (setelah kamu mengetahui akibat mereka) maka tidakkah sepatutnya kamu berfikir dan insaf?"},{"n":63,"a":"هَـٰذِهِۦ جَهَنَّمُ ٱلَّتِى كُنتُمْ تُوعَدُونَ","r":"Hathihi jahannamu allatee kuntum too'adoona","m":"\"Yang kamu saksikan sekarang ialah neraka Jahannam, yang kamu selalu diancam memasukinya (kalau kamu tidak taatkan perintah Allah)."},{"n":64,"a":"ٱصْلَوْهَا ٱلْيَوْمَ بِمَا كُنتُمْ تَكْفُرُونَ","r":"Islawha alyawma bima kuntum takfuroona","m":"\"Rasalah kamu bakarannya pada hari ini, disebabkan perbuatan kufur yang kamu telah lakukan!\""},{"n":65,"a":"ٱلْيَوْمَ نَخْتِمُ عَلَىٰٓ أَفْوَٰهِهِمْ وَتُكَلِّمُنَآ أَيْدِيهِمْ وَتَشْهَدُ أَرْجُلُهُم بِمَا كَانُوا۟ يَكْسِبُونَ","r":"Alyawma nakhtimu 'ala afwahihim watukallimuna aydeehim watashhadu arjuluhum bima kanoo yaksiboona","m":"Pada waktu itu Kami meteraikan mulut mereka (sejurus); dan (memberi peluang kepada) tangan-tangan mereka memberitahu Kami (kesalahan masing-masing), dan kaki mereka pula menjadi saksi tentang apa yang mereka telah usahakan."},{"n":66,"a":"وَلَوْ نَشَآءُ لَطَمَسْنَا عَلَىٰٓ أَعْيُنِهِمْ فَٱسْتَبَقُوا۟ ٱلصِّرَٰطَ فَأَنَّىٰ يُبْصِرُونَ","r":"Walaw nashao latamasna 'ala a'yunihim faistabaqoo alssirata faanna yubsiroona","m":"(Matahati orang-orang yang menderhaka itu rosak) dan kalau Kami kehendaki, Kami berkuasa menghapuskan bentuk dan biji mata kepala mereka menjadi rata, sehingga masing-masing menerpa mencari-cari jalan (yang biasa mereka lalui). (Kiranya dijadikan demikian) maka bagaimanakah mereka dapat melihatnya?"},{"n":67,"a":"وَلَوْ نَشَآءُ لَمَسَخْنَـٰهُمْ عَلَىٰ مَكَانَتِهِمْ فَمَا ٱسْتَطَـٰعُوا۟ مُضِيًّا وَلَا يَرْجِعُونَ","r":"Walaw nashao lamasakhnahum 'ala makanatihim fama istata'oo mudiyyan wala yarji'oona","m":"(Kekuatan akal fikiran mereka juga tidak sihat) dan kalau kami kehendaki, kami berkuasa mangubahkan keadaan jasmani mereka (menjadi kaku beku) di tempat yang mereka berada padanya; maka dengan itu, mereka tidak dapat mara ke hadapan dan juga tidak dapat undur ke belakang."},{"n":68,"a":"وَمَن نُّعَمِّرْهُ نُنَكِّسْهُ فِى ٱلْخَلْقِ ۖ أَفَلَا يَعْقِلُونَ","r":"Waman nu'ammirhu nunakkishu fee alkhalqi afala ya'qiloona","m":"Dan (hendaklah diingat bahawa) sesiapa yang Kami panjangkan umurnya, Kami balikkan kembali kejadiannya (kepada keadaan serba lemah; hakikat ini memang jelas) maka mengapa mereka tidak mahu memikirkannya?"},{"n":69,"a":"وَمَا عَلَّمْنَـٰهُ ٱلشِّعْرَ وَمَا يَنۢبَغِى لَهُۥٓ ۚ إِنْ هُوَ إِلَّا ذِكْرٌ وَقُرْءَانٌ مُّبِينٌ","r":"Wama 'allamnahu alshshi'ra wama yanbaghee lahu in huwa illa thikrun waquranun mubeenun","m":"(Nabi Muhammad bukanlah penyair) dan Kami tidak mengajarkan syair kepadanya, dan kepandaian bersyair itu pula tidak sesuai baginya. Yang Kami wahyukan kepadanya itu tidak lain melainkan nasihat pengajaran dan Kitab Suci yang memberi penerangan;"},{"n":70,"a":"لِّيُنذِرَ مَن كَانَ حَيًّا وَيَحِقَّ ٱلْقَوْلُ عَلَى ٱلْكَـٰفِرِينَ","r":"Liyunthira man kana hayyan wayahiqqa alqawlu 'ala alkafireena","m":"Supaya ia memberi peringatan kepada orang yang sedia hidup (hatinya), dan supaya nyata tetapnya hukuman (azab) terhadap orang-orang yang kufur ingkar."},{"n":71,"a":"أَوَلَمْ يَرَوْا۟ أَنَّا خَلَقْنَا لَهُم مِّمَّا عَمِلَتْ أَيْدِينَآ أَنْعَـٰمًا فَهُمْ لَهَا مَـٰلِكُونَ","r":"Awalam yaraw anna khalaqna lahum mimma 'amilat aydeena an'aman fahum laha malikoona","m":"Tidakkah mereka melihat dan memikirkan, bahawa Kami telah menciptakan untuk mereka binatang-binatang ternak, di antara jenis-jenis makhluk yang telah Kami ciptakan dengan kekuasaan Kami lalu mereka memilikinya?"},{"n":72,"a":"وَذَلَّلْنَـٰهَا لَهُمْ فَمِنْهَا رَكُوبُهُمْ وَمِنْهَا يَأْكُلُونَ","r":"Wathallalnaha lahum faminha rakoobuhum waminha yakuloona","m":"Dan Kami jinakkan dia untuk kegunaan mereka; maka sebahagian di antaranya menjadi kenderaan mereka, dan sebahagian lagi mereka makan."},{"n":73,"a":"وَلَهُمْ فِيهَا مَنَـٰفِعُ وَمَشَارِبُ ۖ أَفَلَا يَشْكُرُونَ","r":"Walahum feeha manafi'u wamasharibu afala yashkuroona","m":"Dan mereka beroleh berbagai faedah dan kegunaan pada binatang ternak itu dan juga beroleh minuman; maka mengapa mereka tidak mahu bersyukur?"},{"n":74,"a":"وَٱتَّخَذُوا۟ مِن دُونِ ٱللَّهِ ءَالِهَةً لَّعَلَّهُمْ يُنصَرُونَ","r":"Waittakhathoo min dooni Allahi alihatan la'allahum yunsaroona","m":"Dan tergamak mereka menyembah beberapa tuhan yang lain dari Allah, (dengan harapan semoga mereka mendapat pertolongan (dari makhluk-makhluk itu)."},{"n":75,"a":"لَا يَسْتَطِيعُونَ نَصْرَهُمْ وَهُمْ لَهُمْ جُندٌ مُّحْضَرُونَ","r":"La yastatee'oona nasrahum wahum lahum jundun muhdaroona","m":"Benda-benda yang mereka sembah itu tidak dapat sama sekali menolong mereka, sedang benda-benda itu sendiri menjadi tentera yang akan dibawa hadir (pada hari kiamat, untuk memberi azab seksa) kepada mereka."},{"n":76,"a":"فَلَا يَحْزُنكَ قَوْلُهُمْ ۘ إِنَّا نَعْلَمُ مَا يُسِرُّونَ وَمَا يُعْلِنُونَ","r":"Fala yahzunka qawluhum inna na'lamu ma yusirroona wama yu'linoona","m":"Maka janganlah engkau (wahai Muhammad) berdukacita disebabkan tuduhan-tuduhan mereka (terhadapmu). Sesungguhnya Kami sedia mengetahui apa yang mereka sembunyikan dan apa yang mereka nyatakan."},{"n":77,"a":"أَوَلَمْ يَرَ ٱلْإِنسَـٰنُ أَنَّا خَلَقْنَـٰهُ مِن نُّطْفَةٍ فَإِذَا هُوَ خَصِيمٌ مُّبِينٌ","r":"Awalam yara alinsanu anna khalaqnahu min nutfatin faitha huwa khaseemun mubeenun","m":"Tidakkah manusia itu melihat dan mengetahui, bahawa Kami telah menciptakan dia dari (setitis) air benih? Dalam pada itu (setelah Kami sempurnakan kejadiannya dan tenaga kekuatannya) maka dengan tidak semena-mena menjadilah ia seorang pembantah yang terang jelas bantahannya (mengenai kekuasaan Kami menghidupkan semula orang-orang yang mati),"},{"n":78,"a":"وَضَرَبَ لَنَا مَثَلًا وَنَسِىَ خَلْقَهُۥ ۖ قَالَ مَن يُحْىِ ٱلْعِظَـٰمَ وَهِىَ رَمِيمٌ","r":"Wadaraba lana mathalan wanasiya khalqahu qala man yuhyee al'ithama wahiya rameemun","m":"Serta ia mengemukakan satu misal perbandingan kepada Kami (tentang kekuasaan itu), dan ia pula lupakan keadaan Kami menciptakannya sambil ia bertanya: \"Siapakah yang dapat menghidupkan tulang-tulang yang telah hancur seperti debu?\""},{"n":79,"a":"قُلْ يُحْيِيهَا ٱلَّذِىٓ أَنشَأَهَآ أَوَّلَ مَرَّةٍ ۖ وَهُوَ بِكُلِّ خَلْقٍ عَلِيمٌ","r":"Qul yuhyeeha allathee anshaaha awwala marratin wahuwa bikulli khalqin 'aleemun","m":"Katakanlah: \"Tulang-tulang yang hancur itu akan dihidupkan oleh Tuhan yang telah menciptakannya pada awal mula wujudnya; dan Ia Maha Mengetahui akan segala keadaan makhluk-makhluk (yang diciptakanNya);"},{"n":80,"a":"ٱلَّذِى جَعَلَ لَكُم مِّنَ ٱلشَّجَرِ ٱلْأَخْضَرِ نَارًا فَإِذَآ أَنتُم مِّنْهُ تُوقِدُونَ","r":"Allathee ja'ala lakum mina alshshajari alakhdari naran faitha antum minhu tooqidoona","m":"\"Tuhan yang telah menjadikan api (boleh didapati) dari pohon-pohon yang hijau basah untuk kegunaan kamu, maka kamu pun selalu menyalakan api dari pohon-pohon itu\"."},{"n":81,"a":"أَوَلَيْسَ ٱلَّذِى خَلَقَ ٱلسَّمَـٰوَٰتِ وَٱلْأَرْضَ بِقَـٰدِرٍ عَلَىٰٓ أَن يَخْلُقَ مِثْلَهُم ۚ بَلَىٰ وَهُوَ ٱلْخَلَّـٰقُ ٱلْعَلِيمُ","r":"Awalaysa allathee khalaqa alssamawati waalarda biqadirin 'ala an yakhluqa mithlahum bala wahuwa alkhallaqu al'aleemu","m":"Tidakkah diakui dan tidakkah dipercayai bahawa Tuhan yang telah menciptakan langit dan bumi (yang demikian besarnya) - berkuasa menciptakan semula manusia sebagaimana Ia menciptakan mereka dahulu? Ya! Diakui dan dipercayai berkuasa! Dan Dia lah Pencipta yang tidak ada bandinganNya, lagi Yang Maha Mengetahui."},{"n":82,"a":"إِنَّمَآ أَمْرُهُۥٓ إِذَآ أَرَادَ شَيْـًٔا أَن يَقُولَ لَهُۥ كُن فَيَكُونُ","r":"Innama amruhu itha arada shayan an yaqoola lahu kun fayakoonu","m":"Sesungguhnya keadaan kekuasaanNya apabila Ia menghendaki adanya sesuatu, hanyalah Ia berfirman kepada (hakikat) benda itu: \" Jadilah engkau! \". Maka ia terus menjadi."},{"n":83,"a":"فَسُبْحَـٰنَ ٱلَّذِى بِيَدِهِۦ مَلَكُوتُ كُلِّ شَىْءٍ وَإِلَيْهِ تُرْجَعُونَ","r":"Fasubhana allathee biyadihi malakootu kulli shayin wailayhi turja'oona","m":"Oleh itu akuilah kesucian Allah (dengan mengucap: Subhaanallah!) - Tuhan yang memiliki dan menguasai tiap-tiap sesuatu, dan kepadaNyalah kamu semua dikembalikan."}];
 
+    const prayers = [
+      {t:"Takbiratul Ihram",k:"Rukun",a:"اللّٰهُ أَكْبَرُ",r:"Allahu Akbar",m:"Allah Maha Besar."},
+      {t:"Doa Iftitah",k:"Sunat",a:"اللّٰهُ أَكْبَرُ كَبِيرًا، وَالْحَمْدُ لِلّٰهِ كَثِيرًا، وَسُبْحَانَ اللّٰهِ بُكْرَةً وَأَصِيلًا. إِنِّي وَجَّهْتُ وَجْهِيَ لِلَّذِي فَطَرَ السَّمَاوَاتِ وَالْأَرْضَ حَنِيفًا مُسْلِمًا وَمَا أَنَا مِنَ الْمُشْرِكِينَ. إِنَّ صَلَاتِي وَنُسُكِي وَمَحْيَايَ وَمَمَاتِي لِلّٰهِ رَبِّ الْعَالَمِينَ. لَا شَرِيكَ لَهُ وَبِذَلِكَ أُمِرْتُ وَأَنَا مِنَ الْمُسْلِمِينَ",r:"Allahu akbar kabira, walhamdulillahi kathira, wa subhanallahi bukratan wa asila. Inni wajjahtu wajhiya lillazi fataras-samawati wal-arda hanifan musliman wa ma ana minal-musyrikin. Inna solati wa nusuki wa mahyaya wa mamati lillahi rabbil-'alamin. La syarika lahu wa bizalika umirtu wa ana minal-muslimin.",m:"Allah Maha Besar sebesar-besarnya. Segala puji bagi Allah sebanyak-banyaknya. Maha Suci Allah pagi dan petang. Aku menghadapkan diriku kepada Pencipta langit dan bumi dengan tunduk dan berserah diri. Sesungguhnya solat, ibadah, hidup dan matiku hanya untuk Allah, Tuhan sekalian alam. Tiada sekutu bagi-Nya; demikianlah aku diperintahkan dan aku termasuk orang Islam."},
+      {t:"Ta‘awwuz",k:"Sunat",a:"أَعُوذُ بِاللّٰهِ مِنَ الشَّيْطَانِ الرَّجِيمِ",r:"A‘uzu billahi minasy-syaitanir-rajim.",m:"Aku berlindung dengan Allah daripada syaitan yang direjam."},
+      {t:"Al-Fatihah — Ayat 1",k:"Rukun",a:"بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِيمِ",r:"Bismillahir-rahmanir-rahim.",m:"Dengan nama Allah Yang Maha Pengasih lagi Maha Penyayang."},
+      {t:"Al-Fatihah — Ayat 2",k:"Rukun",a:"الْحَمْدُ لِلّٰهِ رَبِّ الْعَالَمِينَ",r:"Alhamdu lillahi rabbil-‘alamin.",m:"Segala puji bagi Allah, Tuhan sekalian alam."},
+      {t:"Al-Fatihah — Ayat 3",k:"Rukun",a:"الرَّحْمٰنِ الرَّحِيمِ",r:"Ar-rahmanir-rahim.",m:"Yang Maha Pengasih lagi Maha Penyayang."},
+      {t:"Al-Fatihah — Ayat 4",k:"Rukun",a:"مَالِكِ يَوْمِ الدِّينِ",r:"Maliki yaumid-din.",m:"Yang Menguasai hari pembalasan."},
+      {t:"Al-Fatihah — Ayat 5",k:"Rukun",a:"إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ",r:"Iyyaka na‘budu wa iyyaka nasta‘in.",m:"Hanya kepada-Mu kami menyembah dan hanya kepada-Mu kami memohon pertolongan."},
+      {t:"Al-Fatihah — Ayat 6",k:"Rukun",a:"اهْدِنَا الصِّرَاطَ الْمُسْتَقِيمَ",r:"Ihdinas-siratal-mustaqim.",m:"Tunjukilah kami jalan yang lurus."},
+      {t:"Al-Fatihah — Ayat 7",k:"Rukun",a:"صِرَاطَ الَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ الْمَغْضُوبِ عَلَيْهِمْ وَلَا الضَّالِّينَ",r:"Siratal-lazina an‘amta ‘alaihim, ghairil-maghdubi ‘alaihim walad-dallin.",m:"Iaitu jalan orang yang Engkau kurniakan nikmat kepada mereka; bukan jalan orang yang dimurkai dan bukan pula jalan orang yang sesat."},
+      {t:"Amin",k:"Sunat",a:"آمِينَ",r:"Amin.",m:"Ya Allah, perkenankanlah."},
+      {t:"Takbir Perpindahan",k:"Sunat",a:"اللّٰهُ أَكْبَرُ",r:"Allahu Akbar.",m:"Allah Maha Besar. Dibaca ketika berpindah antara kebanyakan pergerakan solat."},
+      {t:"Bacaan Rukuk",k:"Sunat",a:"سُبْحَانَ رَبِّيَ الْعَظِيمِ وَبِحَمْدِهِ",r:"Subhana rabbiyal-‘azimi wa bihamdih. (3 kali)",m:"Maha Suci Tuhanku Yang Maha Agung dan dengan segala puji bagi-Nya."},
+      {t:"Bacaan I‘tidal",k:"Sunat",a:"سَمِعَ اللّٰهُ لِمَنْ حَمِدَهُ. رَبَّنَا لَكَ الْحَمْدُ",r:"Sami‘allahu liman hamidah. Rabbana lakal-hamd.",m:"Allah mendengar orang yang memuji-Nya. Wahai Tuhan kami, bagi-Mu segala pujian."},
+      {t:"Bacaan Sujud",k:"Sunat",a:"سُبْحَانَ رَبِّيَ الْأَعْلَى وَبِحَمْدِهِ",r:"Subhana rabbiyal-a‘la wa bihamdih. (3 kali)",m:"Maha Suci Tuhanku Yang Maha Tinggi dan dengan segala puji bagi-Nya."},
+      {t:"Duduk Antara Dua Sujud",k:"Sunat",a:"رَبِّ اغْفِرْ لِي وَارْحَمْنِي وَاجْبُرْنِي وَارْفَعْنِي وَارْزُقْنِي وَاهْدِنِي وَعَافِنِي وَاعْفُ عَنِّي",r:"Rabbighfirli, warhamni, wajburni, warfa‘ni, warzuqni, wahdini, wa ‘afini, wa‘fu ‘anni.",m:"Wahai Tuhanku, ampunilah aku, rahmatilah aku, cukupkan kekuranganku, angkat darjatku, berilah aku rezeki dan petunjuk, sihatkan aku serta maafkan aku."},
+      {t:"Tahiyat Awal",k:"Sunat Ab‘ad",a:"التَّحِيَّاتُ الْمُبَارَكَاتُ الصَّلَوَاتُ الطَّيِّبَاتُ لِلّٰهِ. السَّلَامُ عَلَيْكَ أَيُّهَا النَّبِيُّ وَرَحْمَةُ اللّٰهِ وَبَرَكَاتُهُ. السَّلَامُ عَلَيْنَا وَعَلَى عِبَادِ اللّٰهِ الصَّالِحِينَ. أَشْهَدُ أَنْ لَا إِلٰهَ إِلَّا اللّٰهُ، وَأَشْهَدُ أَنَّ مُحَمَّدًا رَسُولُ اللّٰهِ. اللّٰهُمَّ صَلِّ عَلَى مُحَمَّدٍ",r:"At-tahiyyatul-mubarakatus-solawatut-tayyibatu lillah. Assalamu ‘alaika ayyuhan-nabiyyu wa rahmatullahi wa barakatuh. Assalamu ‘alaina wa ‘ala ‘ibadillahis-solihin. Asyhadu alla ilaha illallah, wa asyhadu anna Muhammadar-rasulullah. Allahumma salli ‘ala Muhammad.",m:"Segala penghormatan, keberkatan, doa dan kebaikan adalah milik Allah. Salam, rahmat dan berkat Allah ke atasmu wahai Nabi. Salam ke atas kami dan hamba Allah yang soleh. Aku bersaksi tiada Tuhan selain Allah dan Muhammad ialah Rasul Allah. Ya Allah, limpahkan selawat ke atas Muhammad."},
+      {t:"Tahiyat Akhir & Selawat",k:"Rukun",a:"التَّحِيَّاتُ الْمُبَارَكَاتُ الصَّلَوَاتُ الطَّيِّبَاتُ لِلّٰهِ. السَّلَامُ عَلَيْكَ أَيُّهَا النَّبِيُّ وَرَحْمَةُ اللّٰهِ وَبَرَكَاتُهُ. السَّلَامُ عَلَيْنَا وَعَلَى عِبَادِ اللّٰهِ الصَّالِحِينَ. أَشْهَدُ أَنْ لَا إِلٰهَ إِلَّا اللّٰهُ، وَأَشْهَدُ أَنَّ مُحَمَّدًا رَسُولُ اللّٰهِ. اللّٰهُمَّ صَلِّ عَلَى مُحَمَّدٍ وَعَلَى آلِ مُحَمَّدٍ، كَمَا صَلَّيْتَ عَلَى إِبْرَاهِيمَ وَعَلَى آلِ إِبْرَاهِيمَ، وَبَارِكْ عَلَى مُحَمَّدٍ وَعَلَى آلِ مُحَمَّدٍ، كَمَا بَارَكْتَ عَلَى إِبْرَاهِيمَ وَعَلَى آلِ إِبْرَاهِيمَ فِي الْعَالَمِينَ، إِنَّكَ حَمِيدٌ مَجِيدٌ",r:"At-tahiyyatul-mubarakatus-solawatut-tayyibatu lillah. Assalamu ‘alaika ayyuhan-nabiyyu wa rahmatullahi wa barakatuh. Assalamu ‘alaina wa ‘ala ‘ibadillahis-solihin. Asyhadu alla ilaha illallah, wa asyhadu anna Muhammadar-rasulullah. Allahumma salli ‘ala Muhammad wa ‘ala ali Muhammad, kama sallaita ‘ala Ibrahim wa ‘ala ali Ibrahim. Wa barik ‘ala Muhammad wa ‘ala ali Muhammad, kama barakta ‘ala Ibrahim wa ‘ala ali Ibrahim fil-‘alamin, innaka hamidum-majid.",m:"Segala penghormatan dan kebaikan adalah milik Allah. Salam ke atas Nabi, kami dan hamba Allah yang soleh. Aku bersaksi tiada Tuhan selain Allah dan Muhammad ialah Rasul Allah. Ya Allah, limpahkan selawat dan keberkatan ke atas Nabi Muhammad serta keluarganya sebagaimana kepada Nabi Ibrahim dan keluarganya. Sesungguhnya Engkau Maha Terpuji lagi Maha Mulia."},
+      {t:"Doa Qunut Subuh",k:"Sunat Ab‘ad",a:"اللّٰهُمَّ اهْدِنِي فِيمَنْ هَدَيْتَ، وَعَافِنِي فِيمَنْ عَافَيْتَ، وَتَوَلَّنِي فِيمَنْ تَوَلَّيْتَ، وَبَارِكْ لِي فِيمَا أَعْطَيْتَ، وَقِنِي شَرَّ مَا قَضَيْتَ، فَإِنَّكَ تَقْضِي وَلَا يُقْضَى عَلَيْكَ، وَإِنَّهُ لَا يَذِلُّ مَنْ وَالَيْتَ، وَلَا يَعِزُّ مَنْ عَادَيْتَ، تَبَارَكْتَ رَبَّنَا وَتَعَالَيْتَ، فَلَكَ الْحَمْدُ عَلَى مَا قَضَيْتَ، وَأَسْتَغْفِرُكَ وَأَتُوبُ إِلَيْكَ، وَصَلَّى اللّٰهُ عَلَى سَيِّدِنَا مُحَمَّدٍ النَّبِيِّ الْأُمِّيِّ وَعَلَى آلِهِ وَصَحْبِهِ وَسَلَّمَ",r:"Allahummah-dini fiman hadait, wa ‘afini fiman ‘afait, wa tawallani fiman tawallait, wa barik li fima a‘tait, wa qini syarra ma qadait. Fa innaka taqdi wa la yuqda ‘alaik. Wa innahu la yazillu man walait, wa la ya‘izzu man ‘adait. Tabarakta rabbana wa ta‘alait. Falakal-hamdu ‘ala ma qadait. Wa astaghfiruka wa atubu ilaik. Wa sallallahu ‘ala sayyidina Muhammadin-nabiyyil-ummiyyi wa ‘ala alihi wa sahbihi wa sallam.",m:"Ya Allah, berilah aku petunjuk, kesihatan, perlindungan dan keberkatan bersama mereka yang Engkau kurniakan semua itu. Lindungilah aku daripada keburukan ketetapan-Mu. Engkaulah yang menetapkan dan tiada siapa menetapkan ke atas-Mu. Tidak hina orang yang Engkau pimpin dan tidak mulia orang yang Engkau musuhi. Segala puji atas ketetapan-Mu; aku memohon ampun dan bertaubat kepada-Mu. Limpahkan selawat dan salam kepada Nabi Muhammad, keluarga dan sahabatnya."},
+      {t:"Salam",k:"Rukun",a:"السَّلَامُ عَلَيْكُمْ وَرَحْمَةُ اللّٰهِ",r:"Assalamu ‘alaikum wa rahmatullah.",m:"Salam sejahtera dan rahmat Allah ke atas kamu."}
+    ];
+
     const elements = {
       card: document.getElementById("nameCard"),
       arabic: document.getElementById("arabic"),
@@ -583,6 +665,7 @@
       home: document.getElementById("home"),
       namesApp: document.getElementById("namesApp"),
       yasinApp: document.getElementById("yasinApp"),
+      prayerApp: document.getElementById("prayerApp"),
       completeTitle: document.getElementById("completeTitle"),
       completeText: document.getElementById("completeText")
     };
@@ -601,12 +684,30 @@
       memory: document.getElementById("yasinMemory")
     };
 
+    const prayerElements = {
+      card: document.getElementById("prayerCard"),
+      arabic: document.getElementById("prayerArabic"),
+      rumi: document.getElementById("prayerRumi"),
+      meaning: document.getElementById("prayerMeaning"),
+      label: document.getElementById("prayerLabel"),
+      type: document.getElementById("prayerType"),
+      counter: document.getElementById("prayerCounter"),
+      progress: document.getElementById("prayerProgress"),
+      hint: document.getElementById("prayerHint"),
+      previous: document.getElementById("prayerPrev"),
+      next: document.getElementById("prayerNext"),
+      memory: document.getElementById("prayerMemory")
+    };
+
     let current = Math.min(Math.max(Number(localStorage.getItem("asma-current")) || 0, 0), names.length - 1);
     let meaningRevealed = true;
     let yasinCurrent = Math.min(Math.max(Number(localStorage.getItem("yasin-current")) || 0, 0), yasin.length - 1);
     let yasinRevealed = true;
+    let prayerCurrent = Math.min(Math.max(Number(localStorage.getItem("prayer-current")) || 0, 0), prayers.length - 1);
+    let prayerRevealed = true;
     elements.memory.checked = localStorage.getItem("asma-memory") === "true";
     yasinElements.memory.checked = localStorage.getItem("yasin-memory") === "true";
+    prayerElements.memory.checked = localStorage.getItem("prayer-memory") === "true";
 
     function render() {
       const [arabic, latin, meaning] = names[current];
@@ -696,10 +797,58 @@
       }
     }
 
+    function renderPrayer() {
+      const reading = prayers[prayerCurrent];
+      prayerElements.arabic.textContent = reading.a;
+      prayerElements.rumi.textContent = reading.r;
+      prayerElements.meaning.textContent = reading.m;
+      prayerElements.label.textContent = reading.t;
+      prayerElements.type.textContent = reading.k;
+      prayerElements.counter.textContent = `${prayerCurrent + 1} / ${prayers.length}`;
+      prayerElements.progress.style.width = `${((prayerCurrent + 1) / prayers.length) * 100}%`;
+      prayerElements.previous.disabled = prayerCurrent === 0;
+      prayerRevealed = !prayerElements.memory.checked;
+      updatePrayerMemoryView();
+      localStorage.setItem("prayer-current", prayerCurrent);
+    }
+
+    function updatePrayerMemoryView() {
+      prayerElements.rumi.classList.toggle("hidden", !prayerRevealed);
+      prayerElements.meaning.classList.toggle("hidden", !prayerRevealed);
+      prayerElements.hint.textContent = !prayerRevealed
+        ? "Tap untuk lihat Rumi & maksud"
+        : "Tap kad untuk bacaan seterusnya";
+    }
+
+    function prayerNext() {
+      if (prayerElements.memory.checked && !prayerRevealed) {
+        prayerRevealed = true;
+        updatePrayerMemoryView();
+        return;
+      }
+      if (prayerCurrent === prayers.length - 1) {
+        elements.completeTitle.textContent = "Alhamdulillah!";
+        elements.completeText.textContent = `Anda telah melihat kesemua ${prayers.length} bahagian bacaan solat. Ulang dan semak bacaan bersama guru.`;
+        elements.complete.classList.add("show");
+        elements.restart.focus();
+        return;
+      }
+      prayerCurrent += 1;
+      renderPrayer();
+    }
+
+    function prayerPrevious() {
+      if (prayerCurrent > 0) {
+        prayerCurrent -= 1;
+        renderPrayer();
+      }
+    }
+
     function showHome() {
       elements.home.classList.remove("view-hidden");
       elements.namesApp.classList.add("view-hidden");
       elements.yasinApp.classList.add("view-hidden");
+      elements.prayerApp.classList.add("view-hidden");
       elements.intro.classList.add("dismissed");
     }
 
@@ -717,6 +866,12 @@
       yasinElements.card.focus();
     }
 
+    function choosePrayer() {
+      elements.home.classList.add("view-hidden");
+      elements.prayerApp.classList.remove("view-hidden");
+      prayerElements.card.focus();
+    }
+
     elements.card.addEventListener("click", goNext);
     elements.next.addEventListener("click", goNext);
     elements.previous.addEventListener("click", goPrevious);
@@ -727,7 +882,11 @@
     });
     elements.restart.addEventListener("click", () => {
       elements.complete.classList.remove("show");
-      if (!elements.yasinApp.classList.contains("view-hidden")) {
+      if (!elements.prayerApp.classList.contains("view-hidden")) {
+        prayerCurrent = 0;
+        renderPrayer();
+        prayerElements.card.focus();
+      } else if (!elements.yasinApp.classList.contains("view-hidden")) {
         yasinCurrent = 0;
         renderYasin();
         yasinElements.card.focus();
@@ -749,23 +908,35 @@
       yasinRevealed = !yasinElements.memory.checked;
       updateYasinMemoryView();
     });
+    prayerElements.card.addEventListener("click", prayerNext);
+    prayerElements.next.addEventListener("click", prayerNext);
+    prayerElements.previous.addEventListener("click", prayerPrevious);
+    prayerElements.memory.addEventListener("change", () => {
+      localStorage.setItem("prayer-memory", prayerElements.memory.checked);
+      prayerRevealed = !prayerElements.memory.checked;
+      updatePrayerMemoryView();
+    });
     document.getElementById("chooseNames").addEventListener("click", chooseNames);
     document.getElementById("chooseYasin").addEventListener("click", chooseYasin);
+    document.getElementById("choosePrayer").addEventListener("click", choosePrayer);
     document.getElementById("namesHome").addEventListener("click", showHome);
     document.getElementById("yasinHome").addEventListener("click", showHome);
+    document.getElementById("prayerHome").addEventListener("click", showHome);
 
     document.addEventListener("keydown", event => {
       if (elements.complete.classList.contains("show") || !elements.home.classList.contains("view-hidden")) return;
       const inYasin = !elements.yasinApp.classList.contains("view-hidden");
-      if (event.key === "ArrowLeft") inYasin ? yasinPrevious() : goPrevious();
+      const inPrayer = !elements.prayerApp.classList.contains("view-hidden");
+      if (event.key === "ArrowLeft") inPrayer ? prayerPrevious() : inYasin ? yasinPrevious() : goPrevious();
       if (event.key === "ArrowRight" || event.key === " ") {
         event.preventDefault();
-        inYasin ? yasinNext() : goNext();
+        inPrayer ? prayerNext() : inYasin ? yasinNext() : goNext();
       }
     });
 
     render();
     renderYasin();
+    renderPrayer();
   </script>
 </body>
 </html>
