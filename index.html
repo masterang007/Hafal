@@ -828,6 +828,23 @@
     {"n":113,"ar":"الفَلَقِ","name":"Al-Falaq","v":[{"n":1,"a":"قُلْ أَعُوذُ بِرَبِّ ٱلْفَلَقِ","r":"Qul a'uzoo bi rabbil-falaq","m":"Katakanlah (wahai Muhammad); \"Aku berlindung kepada (Allah) Tuhan yang menciptakan sekalian makhluk,"},{"n":2,"a":"مِن شَرِّ مَا خَلَقَ","r":"Min sharri ma khalaq","m":"\"Dari bencana makhluk-makhluk yang Ia ciptakan;"},{"n":3,"a":"وَمِن شَرِّ غَاسِقٍ إِذَا وَقَبَ","r":"Wa min sharri ghasiqin iza waqab","m":"\"Dan dari bahaya gelap apabila ia masuk;"},{"n":4,"a":"وَمِن شَرِّ ٱلنَّفَّـٰثَـٰتِ فِى ٱلْعُقَدِ","r":"Wa min sharrin-naffaa-thaati fil 'uqad","m":"\"Dan dari kejahatan makhluk-makhluk yang menghembus-hembus pada simpulan-simpulan (dan ikatan-ikatan);"},{"n":5,"a":"وَمِن شَرِّ حَاسِدٍ إِذَا حَسَدَ","r":"Wa min shar ri haasidin iza hasad","m":"\"Dan dari kejahatan orang yang dengki apabila ia melakukan dengkinya\"."}]},
     {"n":114,"ar":"النَّاسِ","name":"An-Nas","v":[{"n":1,"a":"قُلْ أَعُوذُ بِرَبِّ ٱلنَّاسِ","r":"Qul a'uzu birabbin naas","m":"Katakanlah (wahai Muhammad): \"Aku berlindung kepada (Allah) Pemulihara sekalian manusia."},{"n":2,"a":"مَلِكِ ٱلنَّاسِ","r":"Malikin naas","m":"\"Yang Menguasai sekalian manusia,"},{"n":3,"a":"إِلَـٰهِ ٱلنَّاسِ","r":"Ilaahin naas","m":"\"Tuhan yang berhak disembah oleh sekalian manusia,"},{"n":4,"a":"مِن شَرِّ ٱلْوَسْوَاسِ ٱلْخَنَّاسِ","r":"Min sharril was waasil khannaas","m":"\"Dari kejahatan pembisik penghasut yang timbul tenggelam, -"},{"n":5,"a":"ٱلَّذِى يُوَسْوِسُ فِى صُدُورِ ٱلنَّاسِ","r":"Al lazee yuwas wisu fee sudoorin naas","m":"\"Yang melemparkan bisikan dan hasutannya ke dalam hati manusia, -"},{"n":6,"a":"مِنَ ٱلْجِنَّةِ وَٱلنَّاسِ","r":"Minal jinnati wan naas","m":"\"(Iaitu pembisik dan penghasut) dari kalangan jin dan manusia\"."}]},
     ];
+    // localStorage yang selamat — aplikasi tetap berjalan walaupun penyimpanan disekat
+    const store = (() => {
+      try {
+        const ls = localStorage;
+        ls.setItem("__hafal__", "1");
+        ls.removeItem("__hafal__");
+        return ls;
+      } catch (e) {
+        const mem = {};
+        return {
+          getItem: k => (k in mem ? mem[k] : null),
+          setItem: (k, v) => { mem[k] = String(v); },
+          removeItem: k => { delete mem[k]; }
+        };
+      }
+    })();
+
     const elements = {
       card: document.getElementById("nameCard"),
       arabic: document.getElementById("arabic"),
@@ -912,23 +929,23 @@
       grid: document.getElementById("surahGrid")
     };
 
-    let current = Math.min(Math.max(Number(localStorage.getItem("asma-current")) || 0, 0), names.length - 1);
+    let current = Math.min(Math.max(Number(store.getItem("asma-current")) || 0, 0), names.length - 1);
     let meaningRevealed = true;
-    let yasinCurrent = Math.min(Math.max(Number(localStorage.getItem("yasin-current")) || 0, 0), yasin.length - 1);
+    let yasinCurrent = Math.min(Math.max(Number(store.getItem("yasin-current")) || 0, 0), yasin.length - 1);
     let yasinRevealed = true;
-    let prayerCurrent = Math.min(Math.max(Number(localStorage.getItem("prayer-current")) || 0, 0), prayers.length - 1);
+    let prayerCurrent = Math.min(Math.max(Number(store.getItem("prayer-current")) || 0, 0), prayers.length - 1);
     let prayerRevealed = true;
-    let zikirCurrent = Math.min(Math.max(Number(localStorage.getItem("zikir-current")) || 0, 0), zikir.length - 1);
+    let zikirCurrent = Math.min(Math.max(Number(store.getItem("zikir-current")) || 0, 0), zikir.length - 1);
     let zikirRevealed = true;
     let surahNumber = 0;
     let surahCurrent = 0;
     let surahRevealed = true;
 
-    elements.memory.checked = localStorage.getItem("asma-memory") === "true";
-    yasinElements.memory.checked = localStorage.getItem("yasin-memory") === "true";
-    prayerElements.memory.checked = localStorage.getItem("prayer-memory") === "true";
-    zikirElements.memory.checked = localStorage.getItem("zikir-memory") === "true";
-    surahElements.memory.checked = localStorage.getItem("surah-memory") === "true";
+    elements.memory.checked = store.getItem("asma-memory") === "true";
+    yasinElements.memory.checked = store.getItem("yasin-memory") === "true";
+    prayerElements.memory.checked = store.getItem("prayer-memory") === "true";
+    zikirElements.memory.checked = store.getItem("zikir-memory") === "true";
+    surahElements.memory.checked = store.getItem("surah-memory") === "true";
 
     function render() {
       const [arabic, latin, meaning] = names[current];
@@ -940,7 +957,7 @@
       elements.previous.disabled = current === 0;
       meaningRevealed = !elements.memory.checked;
       updateMemoryView();
-      localStorage.setItem("asma-current", current);
+      store.setItem("asma-current", current);
     }
 
     function updateMemoryView() {
@@ -985,7 +1002,7 @@
       yasinElements.previous.disabled = yasinCurrent === 0;
       yasinRevealed = !yasinElements.memory.checked;
       updateYasinMemoryView();
-      localStorage.setItem("yasin-current", yasinCurrent);
+      store.setItem("yasin-current", yasinCurrent);
     }
 
     function updateYasinMemoryView() {
@@ -1032,7 +1049,7 @@
       prayerElements.previous.disabled = prayerCurrent === 0;
       prayerRevealed = !prayerElements.memory.checked;
       updatePrayerMemoryView();
-      localStorage.setItem("prayer-current", prayerCurrent);
+      store.setItem("prayer-current", prayerCurrent);
     }
 
     function updatePrayerMemoryView() {
@@ -1077,7 +1094,7 @@
       zikirElements.previous.disabled = zikirCurrent === 0;
       zikirRevealed = !zikirElements.memory.checked;
       updateZikirMemoryView();
-      localStorage.setItem("zikir-current", zikirCurrent);
+      store.setItem("zikir-current", zikirCurrent);
     }
 
     function updateZikirMemoryView() {
@@ -1154,7 +1171,9 @@
       strong.textContent = name;
       const small = document.createElement("small");
       small.textContent = countText;
-      btn.append(ar, strong, small);
+      btn.appendChild(ar);
+      btn.appendChild(strong);
+      btn.appendChild(small);
       btn.addEventListener("click", onClick);
       return btn;
     }
@@ -1185,7 +1204,9 @@
         surahs.filter(group.pick).forEach(s => {
           cards.appendChild(makeSurahCard(s.name, s.ar, `${s.v.length} ayat`, () => openSurah(s.n)));
         });
-        section.append(title, note, cards);
+        section.appendChild(title);
+        section.appendChild(note);
+        section.appendChild(cards);
         grid.appendChild(section);
       });
     }
@@ -1193,7 +1214,7 @@
     function openSurah(n) {
       surahNumber = n;
       surahCurrent = Math.min(
-        Math.max(Number(localStorage.getItem("surah-pos-" + n)) || 0, 0),
+        Math.max(Number(store.getItem("surah-pos-" + n)) || 0, 0),
         currentSurah().v.length - 1
       );
       elements.surahPicker.classList.add("view-hidden");
@@ -1221,8 +1242,8 @@
       surahElements.bismillah.classList.toggle("view-hidden", s.n === 1 || s.n === 9);
       surahRevealed = !surahElements.memory.checked;
       updateSurahMemoryView();
-      localStorage.setItem("surah-number", surahNumber);
-      localStorage.setItem("surah-pos-" + surahNumber, surahCurrent);
+      store.setItem("surah-number", surahNumber);
+      store.setItem("surah-pos-" + surahNumber, surahCurrent);
     }
 
     function updateSurahMemoryView() {
@@ -1304,7 +1325,7 @@
     elements.next.addEventListener("click", goNext);
     elements.previous.addEventListener("click", goPrevious);
     elements.memory.addEventListener("change", () => {
-      localStorage.setItem("asma-memory", elements.memory.checked);
+      store.setItem("asma-memory", elements.memory.checked);
       meaningRevealed = !elements.memory.checked;
       updateMemoryView();
     });
@@ -1343,7 +1364,7 @@
     yasinElements.next.addEventListener("click", yasinNext);
     yasinElements.previous.addEventListener("click", yasinPrevious);
     yasinElements.memory.addEventListener("change", () => {
-      localStorage.setItem("yasin-memory", yasinElements.memory.checked);
+      store.setItem("yasin-memory", yasinElements.memory.checked);
       yasinRevealed = !yasinElements.memory.checked;
       updateYasinMemoryView();
     });
@@ -1352,7 +1373,7 @@
     prayerElements.next.addEventListener("click", prayerNext);
     prayerElements.previous.addEventListener("click", prayerPrevious);
     prayerElements.memory.addEventListener("change", () => {
-      localStorage.setItem("prayer-memory", prayerElements.memory.checked);
+      store.setItem("prayer-memory", prayerElements.memory.checked);
       prayerRevealed = !prayerElements.memory.checked;
       updatePrayerMemoryView();
     });
@@ -1362,7 +1383,7 @@
     zikirElements.next.addEventListener("click", zikirNext);
     zikirElements.previous.addEventListener("click", zikirPrevious);
     zikirElements.memory.addEventListener("change", () => {
-      localStorage.setItem("zikir-memory", zikirElements.memory.checked);
+      store.setItem("zikir-memory", zikirElements.memory.checked);
       zikirRevealed = !zikirElements.memory.checked;
       updateZikirMemoryView();
     });
@@ -1383,7 +1404,7 @@
     surahElements.next.addEventListener("click", surahNext);
     surahElements.previous.addEventListener("click", surahPrevious);
     surahElements.memory.addEventListener("change", () => {
-      localStorage.setItem("surah-memory", surahElements.memory.checked);
+      store.setItem("surah-memory", surahElements.memory.checked);
       surahRevealed = !surahElements.memory.checked;
       updateSurahMemoryView();
     });
@@ -1405,10 +1426,10 @@
     });
 
     buildSurahGrid();
-    const savedSurah = Number(localStorage.getItem("surah-number")) || 0;
+    const savedSurah = Number(store.getItem("surah-number")) || 0;
     surahNumber = surahs.some(s => s.n === savedSurah) ? savedSurah : surahs[0].n;
     surahCurrent = Math.min(
-      Math.max(Number(localStorage.getItem("surah-pos-" + surahNumber)) || 0, 0),
+      Math.max(Number(store.getItem("surah-pos-" + surahNumber)) || 0, 0),
       currentSurah().v.length - 1
     );
 
