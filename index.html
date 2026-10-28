@@ -322,6 +322,22 @@
     .surah-grid .lesson-card .lesson-arabic { font-size: 1.6rem; }
     .surah-grid .lesson-card small { font-size: .8rem; }
     .surah-grid .lesson-card.selected { border-color: var(--gold); }
+    .surah-groups { display: grid; gap: 24px; }
+    .surah-group-title {
+      margin: 0 0 5px;
+      color: var(--gold);
+      font-size: .95rem;
+      font-weight: 700;
+      letter-spacing: .02em;
+      text-align: center;
+    }
+    .surah-group-note {
+      margin: 0 0 13px;
+      color: var(--muted);
+      font-size: .82rem;
+      line-height: 1.5;
+      text-align: center;
+    }
 
     .yasin-app .name-card { min-height: 520px; }
     .yasin-app .arabic {
@@ -533,7 +549,7 @@
       </div>
       <h1 id="surahPickerTitle">Surah Lazim</h1>
       <p class="home-subtitle">Pilih surah untuk menghafal. Kemajuan setiap surah disimpan secara automatik.</p>
-      <div class="lesson-grid surah-grid" id="surahGrid"></div>
+      <div class="surah-groups" id="surahGrid"></div>
     </div>
   </section>
 
@@ -1107,24 +1123,70 @@
       return surahs[surahIndex()];
     }
 
+    const surahGroups = [
+      {
+        title: "Surah Pendek Lazim",
+        note: "Surah pendek yang lazim dibaca dalam solat dan amalan harian (Al-Asr hingga An-Nas).",
+        pick: s => s.n >= 103
+      },
+      {
+        title: "Surah Amalan Waktu Tertentu",
+        note: "Surah mengikut amalan: Yasin (malam Jumaat & si mati), Al-Kahfi (Jumaat), Al-Jumu'ah (solat Jumaat), Al-Mulk & Al-Waqi'ah (malam & sebelum tidur), Ar-Rahman (tahlil & doa), Al-Fatihah (rukun solat).",
+        pick: s => [1, 18, 55, 56, 62, 67].includes(s.n),
+        leadYasin: true
+      },
+      {
+        title: "Juz Amma Lain",
+        note: "Surah lain dalam Juz Amma — dari An-Naba hingga At-Takathur.",
+        pick: s => s.n >= 78 && s.n <= 102
+      }
+    ];
+
+    function makeSurahCard(name, arabic, countText, onClick) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "lesson-card";
+      const ar = document.createElement("span");
+      ar.className = "lesson-arabic";
+      ar.lang = "ar";
+      ar.textContent = arabic;
+      const strong = document.createElement("strong");
+      strong.textContent = name;
+      const small = document.createElement("small");
+      small.textContent = countText;
+      btn.append(ar, strong, small);
+      btn.addEventListener("click", onClick);
+      return btn;
+    }
+
+    function openYasinLesson() {
+      elements.surahPicker.classList.add("view-hidden");
+      elements.yasinApp.classList.remove("view-hidden");
+      yasinElements.card.focus();
+    }
+
     function buildSurahGrid() {
       const grid = surahElements.grid;
       grid.textContent = "";
-      surahs.forEach(s => {
-        const btn = document.createElement("button");
-        btn.type = "button";
-        btn.className = "lesson-card";
-        const ar = document.createElement("span");
-        ar.className = "lesson-arabic";
-        ar.lang = "ar";
-        ar.textContent = s.ar;
-        const strong = document.createElement("strong");
-        strong.textContent = s.name;
-        const small = document.createElement("small");
-        small.textContent = `${s.v.length} ayat`;
-        btn.append(ar, strong, small);
-        btn.addEventListener("click", () => openSurah(s.n));
-        grid.appendChild(btn);
+      surahGroups.forEach(group => {
+        const section = document.createElement("section");
+        section.className = "surah-group";
+        const title = document.createElement("h2");
+        title.className = "surah-group-title";
+        title.textContent = group.title;
+        const note = document.createElement("p");
+        note.className = "surah-group-note";
+        note.textContent = group.note;
+        const cards = document.createElement("div");
+        cards.className = "lesson-grid surah-grid";
+        if (group.leadYasin) {
+          cards.appendChild(makeSurahCard("Yasin", "يس", "83 ayat · dibuka di halaman Yasin", openYasinLesson));
+        }
+        surahs.filter(group.pick).forEach(s => {
+          cards.appendChild(makeSurahCard(s.name, s.ar, `${s.v.length} ayat`, () => openSurah(s.n)));
+        });
+        section.append(title, note, cards);
+        grid.appendChild(section);
       });
     }
 
