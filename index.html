@@ -160,7 +160,7 @@
 
     .controls {
       display: grid;
-      grid-template-columns: 1fr 1.55fr;
+      grid-template-columns: 1fr 1fr 1.4fr;
       gap: 12px;
     }
 
@@ -503,6 +503,7 @@
 
     <div class="controls">
       <button type="button" id="prevBtn" aria-label="Nama sebelumnya">← Sebelum</button>
+      <button type="button" id="namesReset" aria-label="Ulang dari awal">↻ Mula Semula</button>
       <button type="button" class="next-btn" id="nextBtn">Seterusnya →</button>
       <label class="memory-label" for="memoryMode">
         <span>Mod Hafalan <small>— sembunyikan maksud dahulu</small></span>
@@ -531,6 +532,7 @@
 
     <div class="controls">
       <button type="button" id="yasinPrev" aria-label="Ayat sebelumnya">← Sebelum</button>
+      <button type="button" id="yasinReset" aria-label="Ulang dari awal">↻ Mula Semula</button>
       <button type="button" class="next-btn" id="yasinNext">Seterusnya →</button>
       <label class="memory-label" for="yasinMemory">
         <span>Mod Hafalan <small>— sembunyikan Rumi & maksud dahulu</small></span>
@@ -573,6 +575,7 @@
 
     <div class="controls">
       <button type="button" id="surahPrev" aria-label="Ayat sebelumnya">← Sebelum</button>
+      <button type="button" id="surahReset" aria-label="Ulang dari awal">↻ Mula Semula</button>
       <button type="button" class="next-btn" id="surahNext">Seterusnya →</button>
       <label class="memory-label" for="surahMemory">
         <span>Mod Hafalan <small>— sembunyikan Rumi & maksud dahulu</small></span>
@@ -600,6 +603,7 @@
 
     <div class="controls">
       <button type="button" id="prayerPrev" aria-label="Bacaan sebelumnya">← Sebelum</button>
+      <button type="button" id="prayerReset" aria-label="Ulang dari awal">↻ Mula Semula</button>
       <button type="button" class="next-btn" id="prayerNext">Seterusnya →</button>
       <label class="memory-label" for="prayerMemory">
         <span>Mod Hafalan <small>— sembunyikan Rumi & maksud dahulu</small></span>
@@ -626,6 +630,7 @@
 
     <div class="controls">
       <button type="button" id="zikirPrev" aria-label="Sebelumnya">← Sebelum</button>
+      <button type="button" id="zikirReset" aria-label="Ulang dari awal">↻ Mula Semula</button>
       <button type="button" class="next-btn" id="zikirNext">Seterusnya →</button>
       <label class="memory-label" for="zikirMemory">
         <span>Mod Hafalan <small>— sembunyikan maksud dahulu</small></span>
@@ -1413,6 +1418,13 @@
       surahRevealed = !surahElements.memory.checked;
       updateSurahMemoryView();
     });
+
+    // Butang Mula Semula — kembali ke ayat/nama/pembacaan pertama
+    document.getElementById("namesReset").addEventListener("click", () => { current = 0; render(); });
+    document.getElementById("yasinReset").addEventListener("click", () => { yasinCurrent = 0; renderYasin(); });
+    document.getElementById("surahReset").addEventListener("click", () => { surahCurrent = 0; renderSurah(); });
+    document.getElementById("prayerReset").addEventListener("click", () => { prayerCurrent = 0; renderPrayer(); });
+    document.getElementById("zikirReset").addEventListener("click", () => { zikirCurrent = 0; renderZikir(); });
 
     document.addEventListener("keydown", event => {
       if (elements.complete.classList.contains("show") || !elements.home.classList.contains("view-hidden") || !elements.surahPicker.classList.contains("view-hidden")) return;
